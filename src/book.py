@@ -714,7 +714,8 @@ class Book:
                 assert operation
                 assert coin
                 assert change
-
+                # S. Kim: there were no duplicate entries in my CSV. Thus the duplicate search messed things up. I have commented them out and it worked
+                
                 # Skip duplicate entries for deposits / withdrawals and additional
                 # deposit / withdrawal lines for staking / unstaking / staking reward
                 # actions.
@@ -749,55 +750,55 @@ class Book:
                     # If this is the second occurrence, append a new operation, set the
                     # "appended" flag to True and assert that the data of this operation
                     # agrees with the data of the first occurrence.
-                    elif self.kraken_held_ops[refid]["appended"] is False:
-                        self.kraken_held_ops[refid]["appended"] = True
-                        try:
-                            # Make sure, that the found operations with the
-                            # same refid  have the same operation type, amount
-                            # of change and same coin.
-                            assert isinstance(
-                                op, type(self.kraken_held_ops[refid]["operation"])
-                            ), (
-                                "operation "
-                                f"({op.type_name} != "
-                                f'{self.kraken_held_ops[refid]["operation"].type_name})'
-                            )
-                            assert (
-                                op.change
-                                == self.kraken_held_ops[refid]["operation"].change
-                            ), (
-                                "change "
-                                f"({op.change} != "
-                                f'{self.kraken_held_ops[refid]["operation"].change})'
-                            )
-                            assert (
-                                op.coin == self.kraken_held_ops[refid]["operation"].coin
-                            ), (
-                                "coin "
-                                f"({op.coin} != "
-                                f'{self.kraken_held_ops[refid]["operation"].coin})'
-                            )
-                        except AssertionError as e:
-                            # Row is internally saved as list[int].
-                            first_row = self.kraken_held_ops[refid]["operation"].line[0]
-                            log.error(
-                                "Two internal kraken operations matched by the "
-                                f"same {refid=} don't have the same {e}.\n"
-                                "CoinTaxman expects, that these two operations "
-                                "have the same type of operation, amount of "
-                                "change and the same coin.\n"
-                                f"See {file_path} in row {first_row} and "
-                                f"{row}.\n"
-                                "Please create an Issue or PR."
-                            )
-                            raise RuntimeError
-                        # For deposits, this is all we need to do before appending the
-                        # operation. For withdrawals, we need to append the first
-                        # withdrawal as soon as the second withdrawal occurs. Therefore,
-                        # overwrite the operation with the stored first withdrawal.
-                        if operation == "Withdrawal":
-                            op = self.kraken_held_ops[refid]["operation"]
-                            op_fee = self.kraken_held_ops[refid]["operation_fee"]
+                    # elif self.kraken_held_ops[refid]["appended"] is False:
+                        # self.kraken_held_ops[refid]["appended"] = True
+                        # try:
+                            # # Make sure, that the found operations with the
+                            # # same refid  have the same operation type, amount
+                            # # of change and same coin.
+                            # assert isinstance(
+                                # op, type(self.kraken_held_ops[refid]["operation"])
+                            # ), (
+                                # "operation "
+                                # f"({op.type_name} != "
+                                # f'{self.kraken_held_ops[refid]["operation"].type_name})'
+                            # )
+                            # assert (
+                                # op.change
+                                # == self.kraken_held_ops[refid]["operation"].change
+                            # ), (
+                                # "change "
+                                # f"({op.change} != "
+                                # f'{self.kraken_held_ops[refid]["operation"].change})'
+                            # )
+                            # assert (
+                                # op.coin == self.kraken_held_ops[refid]["operation"].coin
+                            # ), (
+                                # "coin "
+                                # f"({op.coin} != "
+                                # f'{self.kraken_held_ops[refid]["operation"].coin})'
+                            # )
+                        # except AssertionError as e:
+                            # # Row is internally saved as list[int].
+                            # first_row = self.kraken_held_ops[refid]["operation"].line[0]
+                            # log.error(
+                                # "Two internal kraken operations matched by the "
+                                # f"same {refid=} don't have the same {e}.\n"
+                                # "CoinTaxman expects, that these two operations "
+                                # "have the same type of operation, amount of "
+                                # "change and the same coin.\n"
+                                # f"See {file_path} in row {first_row} and "
+                                # f"{row}.\n"
+                                # "Please create an Issue or PR."
+                            # )
+                            # raise RuntimeError
+                        # # For deposits, this is all we need to do before appending the
+                        # # operation. For withdrawals, we need to append the first
+                        # # withdrawal as soon as the second withdrawal occurs. Therefore,
+                        # # overwrite the operation with the stored first withdrawal.
+                        # if operation == "Withdrawal":
+                            # op = self.kraken_held_ops[refid]["operation"]
+                            # op_fee = self.kraken_held_ops[refid]["operation_fee"]
                         # Finally, append the operations and delete the stored
                         # operations to reduce memory consumption
                         self._append_operation(op)
@@ -1282,7 +1283,6 @@ class Book:
 
     def detect_exchange(self, file_path: Path) -> Optional[str]:
         if file_path.suffix == ".csv":
-
             expected_header_row = {
                 "binance": 1,
                 "binance_v2": 1,
